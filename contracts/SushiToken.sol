@@ -23,7 +23,7 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
     // @notice A record of each accounts delegate
     mapping (address => address) internal _delegates;
 
-    /// @notice A checkpoint for marking number of votes from a given block
+    // @notice A checkpoint for marking number of votes from a given block
     struct Checkpoint {
         uint32 fromBlock;
         uint256 votes;
