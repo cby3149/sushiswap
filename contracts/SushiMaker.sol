@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 // P1 - P3: OK
-pragma solidity 0.6.12;
+pragma solidity >=0.6.12;
 import "./libraries/SafeMath.sol";
 import "./libraries/SafeERC20.sol";
 
@@ -87,7 +87,8 @@ contract SushiMaker is Ownable {
     // C6: It's not a fool proof solution, but it prevents flash loans, so here it's ok to use tx.origin
     modifier onlyEOA() {
         // Try to make flash-loan exploit harder to do by only allowing externally owned addresses.
-        require(msg.sender == tx.origin, "SushiMaker: must use EOA");
+        // disable for now JTL
+        //require(msg.sender == tx.origin, "SushiMaker: must use EOA");
         _;
     }
 

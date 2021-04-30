@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.6.12;
+pragma solidity >=0.6.12;
 import "./libraries/SafeMath.sol";
 import "./libraries/SafeERC20.sol";
 
@@ -85,7 +85,8 @@ contract SushiMakerKashi is Ownable {
 
     modifier onlyEOA() {
         // Try to make flash-loan exploit harder to do by only allowing externally-owned addresses.
-        require(msg.sender == tx.origin, "Maker: Must use EOA");
+        // disable for now JTL
+        //require(msg.sender == tx.origin, "Maker: Must use EOA");
         _;
     }
 

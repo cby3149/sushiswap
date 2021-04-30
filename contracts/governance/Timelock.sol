@@ -11,7 +11,7 @@
 // Ctrl+f for XXX to see all the modifications.
 
 // XXX: pragma solidity ^0.5.16;
-pragma solidity 0.6.12;
+pragma solidity >=0.6.12;
 
 // XXX: import "./SafeMath.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -119,7 +119,16 @@ contract Timelock {
         }
 
         // solium-disable-next-line security/no-call-value
-        (bool success, bytes memory returnData) = target.call.value(value)(callData);
+        // (bool success, bytes memory returnData) = target.call.value(value)(callData);
+
+// The following syntax is deprecated: 
+// f.gas(...)(), f.value(...)() and (new C).value(...)().  
+
+// Replace these calls by
+// f{gas: ..., value: ...}() and (new C){value: ...}(). 
+
+
+        (bool success, bytes memory returnData) = target.call{value:value}(callData);
         require(success, "Timelock::executeTransaction: Transaction execution reverted.");
 
         emit ExecuteTransaction(txHash, target, value, signature, data, eta);
