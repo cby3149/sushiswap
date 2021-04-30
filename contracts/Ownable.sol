@@ -16,11 +16,11 @@ contract OwnableData {
 }
 
 // T1 - T4: OK
-abstract contract Ownable is OwnableData {
+contract Ownable is OwnableData {
     // E1: OK
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-    constructor() public {
+    constructor () internal {
         owner = msg.sender;
         emit OwnershipTransferred(address(0), msg.sender);
     }

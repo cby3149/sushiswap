@@ -20,7 +20,7 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
     // Which is copied and modified from COMPOUND:
     // https://github.com/compound-finance/compound-protocol/blob/master/contracts/Governance/Comp.sol
 
-    // notice A record of each accounts delegate
+    // @notice A record of each accounts delegate
     mapping (address => address) internal _delegates;
 
     /// @notice A checkpoint for marking number of votes from a given block
@@ -118,6 +118,8 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
         address signatory = ecrecover(digest, v, r, s);
         require(signatory != address(0), "SUSHI::delegateBySig: invalid signature");
         require(nonce == nonces[signatory]++, "SUSHI::delegateBySig: invalid nonce");
+        // CHANGE_CBY
+        // require(now <= expiry, "SUSHI::delegateBySig: signature expired");
         require(block.timestamp <= expiry, "SUSHI::delegateBySig: signature expired");
         return _delegate(signatory, delegatee);
     }
@@ -199,8 +201,7 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
                 // decrease old representative
                 uint32 srcRepNum = numCheckpoints[srcRep];
                 uint256 srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
-                //uint256 srcRepNew = srcRepOld.sub(amount); no longer needed - automatically handled
-                uint256 srcRepNew = srcRepOld - amount;
+                uint256 srcRepNew = srcRepOld.sub(amount);
                 _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
             }
 
@@ -208,7 +209,7 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
                 // increase new representative
                 uint32 dstRepNum = numCheckpoints[dstRep];
                 uint256 dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
-                uint256 dstRepNew = dstRepOld + amount;
+                uint256 dstRepNew = dstRepOld.add(amount);
                 _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
             }
         }
@@ -240,6 +241,7 @@ contract SushiToken is ERC20("SushiToken", "SUSHI"), Ownable {
     }
 
     function getChainId() internal pure returns (uint) {
+        // CHANGE_CBY
         uint256 chainId = 420;
         return chainId;
     }

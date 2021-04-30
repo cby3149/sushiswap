@@ -87,7 +87,7 @@ contract SushiMaker is Ownable {
     // C6: It's not a fool proof solution, but it prevents flash loans, so here it's ok to use tx.origin
     modifier onlyEOA() {
         // Try to make flash-loan exploit harder to do by only allowing externally owned addresses.
-        // disable for now JTL
+        // CHANGE_CBY
         //require(msg.sender == tx.origin, "SushiMaker: must use EOA");
         _;
     }

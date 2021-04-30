@@ -9,7 +9,7 @@ import "@boringcrypto/boring-solidity/contracts/BoringOwnable.sol";
 import "../MasterChefV2.sol";
 
 /// @author @0xKeno
-contract ComplexRewarder is IRewarder,  BoringOwnable{
+contract ComplexRewarderTime is IRewarder,  BoringOwnable{
     using BoringMath for uint256;
     using BoringMath128 for uint128;
     using BoringERC20 for IERC20;
@@ -29,7 +29,7 @@ contract ComplexRewarder is IRewarder,  BoringOwnable{
     /// Also known as the amount of SUSHI to distribute per block.
     struct PoolInfo {
         uint128 accSushiPerShare;
-        uint64 lastRewardBlock;
+        uint64 lastRewardTime;
         uint64 allocPoint;
     }
 
@@ -43,7 +43,7 @@ contract ComplexRewarder is IRewarder,  BoringOwnable{
     /// @dev Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 totalAllocPoint;
 
-    uint256 public tokenPerBlock;
+    uint256 public rewardPerSecond;
     uint256 private constant ACC_TOKEN_PRECISION = 1e12;
 
     address private immutable MASTERCHEF_V2;
@@ -51,12 +51,13 @@ contract ComplexRewarder is IRewarder,  BoringOwnable{
     event LogOnReward(address indexed user, uint256 indexed pid, uint256 amount, address indexed to);
     event LogPoolAddition(uint256 indexed pid, uint256 allocPoint);
     event LogSetPool(uint256 indexed pid, uint256 allocPoint);
-    event LogUpdatePool(uint256 indexed pid, uint64 lastRewardBlock, uint256 lpSupply, uint256 accSushiPerShare);
+    event LogUpdatePool(uint256 indexed pid, uint64 lastRewardTime, uint256 lpSupply, uint256 accSushiPerShare);
+    event LogRewardPerSecond(uint256 rewardPerSecond);
     event LogInit();
 
-    constructor (IERC20 _rewardToken, uint256 _tokenPerBlock, address _MASTERCHEF_V2) public {
+    constructor (IERC20 _rewardToken, uint256 _rewardPerSecond, address _MASTERCHEF_V2) public {
         rewardToken = _rewardToken;
-        tokenPerBlock = _tokenPerBlock;
+        rewardPerSecond = _rewardPerSecond;
         MASTERCHEF_V2 = _MASTERCHEF_V2;
     }
 
@@ -86,6 +87,13 @@ contract ComplexRewarder is IRewarder,  BoringOwnable{
         return (_rewardTokens, _rewardAmounts);
     }
 
+    /// @notice Sets the sushi per second to be distributed. Can only be called by the owner.
+    /// @param _rewardPerSecond The amount of Sushi to be distributed per second.
+    function setRewardPerSecond(uint256 _rewardPerSecond) public onlyOwner {
+        rewardPerSecond = _rewardPerSecond;
+        emit LogRewardPerSecond(_rewardPerSecond);
+    }
+
     modifier onlyMCV2 {
         require(
             msg.sender == MASTERCHEF_V2,
@@ -104,13 +112,13 @@ contract ComplexRewarder is IRewarder,  BoringOwnable{
     /// @param allocPoint AP of the new pool.
     /// @param _pid Pid on MCV2
     function add(uint256 allocPoint, uint256 _pid) public onlyOwner {
-        require(poolInfo[_pid].lastRewardBlock == 0, "Pool already exists");
-        uint256 lastRewardBlock = block.number;
+        require(poolInfo[_pid].lastRewardTime == 0, "Pool already exists");
+        uint256 lastRewardTime = block.timestamp;
         totalAllocPoint = totalAllocPoint.add(allocPoint);
 
         poolInfo[_pid] = PoolInfo({
             allocPoint: allocPoint.to64(),
-            lastRewardBlock: lastRewardBlock.to64(),
+            lastRewardTime: lastRewardTime.to64(),
             accSushiPerShare: 0
         });
         poolIds.push(_pid);
@@ -135,9 +143,9 @@ contract ComplexRewarder is IRewarder,  BoringOwnable{
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accSushiPerShare = pool.accSushiPerShare;
         uint256 lpSupply = MasterChefV2(MASTERCHEF_V2).lpToken(_pid).balanceOf(MASTERCHEF_V2);
-        if (block.number > pool.lastRewardBlock && lpSupply != 0) {
-            uint256 blocks = block.number.sub(pool.lastRewardBlock);
-            uint256 sushiReward = blocks.mul(tokenPerBlock).mul(pool.allocPoint) / totalAllocPoint;
+        if (block.timestamp > pool.lastRewardTime && lpSupply != 0) {
+            uint256 time = block.timestamp.sub(pool.lastRewardTime);
+            uint256 sushiReward = time.mul(rewardPerSecond).mul(pool.allocPoint) / totalAllocPoint;
             accSushiPerShare = accSushiPerShare.add(sushiReward.mul(ACC_TOKEN_PRECISION) / lpSupply);
         }
         pending = (user.amount.mul(accSushiPerShare) / ACC_TOKEN_PRECISION).sub(user.rewardDebt);
@@ -157,17 +165,17 @@ contract ComplexRewarder is IRewarder,  BoringOwnable{
     /// @return pool Returns the pool that was updated.
     function updatePool(uint256 pid) public returns (PoolInfo memory pool) {
         pool = poolInfo[pid];
-        if (block.number > pool.lastRewardBlock) {
+        if (block.timestamp > pool.lastRewardTime) {
             uint256 lpSupply = MasterChefV2(MASTERCHEF_V2).lpToken(pid).balanceOf(MASTERCHEF_V2);
 
             if (lpSupply > 0) {
-                uint256 blocks = block.number.sub(pool.lastRewardBlock);
-                uint256 sushiReward = blocks.mul(tokenPerBlock).mul(pool.allocPoint) / totalAllocPoint;
+                uint256 time = block.timestamp.sub(pool.lastRewardTime);
+                uint256 sushiReward = time.mul(rewardPerSecond).mul(pool.allocPoint) / totalAllocPoint;
                 pool.accSushiPerShare = pool.accSushiPerShare.add((sushiReward.mul(ACC_TOKEN_PRECISION) / lpSupply).to128());
             }
-            pool.lastRewardBlock = block.number.to64();
+            pool.lastRewardTime = block.timestamp.to64();
             poolInfo[pid] = pool;
-            emit LogUpdatePool(pid, pool.lastRewardBlock, lpSupply, pool.accSushiPerShare);
+            emit LogUpdatePool(pid, pool.lastRewardTime, lpSupply, pool.accSushiPerShare);
         }
     }
 

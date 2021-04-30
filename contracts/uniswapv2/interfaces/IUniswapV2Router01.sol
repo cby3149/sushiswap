@@ -3,7 +3,8 @@
 pragma solidity >=0.6.2;
 
 interface IUniswapV2Router01 {
-    function factory() external view returns (address);
+    function factory() external pure returns (address);
+    // CHANGE_CBY
     //function WETH() external view returns (address);
 
     function addLiquidity(
@@ -16,6 +17,7 @@ interface IUniswapV2Router01 {
         address to,
         uint deadline
     ) external returns (uint amountA, uint amountB, uint liquidity);
+    // CHANGE_CBY
     // function addLiquidityETH(
     //     address token,
     //     uint amountTokenDesired,
@@ -33,6 +35,7 @@ interface IUniswapV2Router01 {
         address to,
         uint deadline
     ) external returns (uint amountA, uint amountB);
+    // CHANGE_CBY
     // function removeLiquidityETH(
     //     address token,
     //     uint liquidity,
@@ -51,6 +54,7 @@ interface IUniswapV2Router01 {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external returns (uint amountA, uint amountB);
+    // CHANGE_CBY
     // function removeLiquidityETHWithPermit(
     //     address token,
     //     uint liquidity,
@@ -74,6 +78,7 @@ interface IUniswapV2Router01 {
         address to,
         uint deadline
     ) external returns (uint[] memory amounts);
+    // CHANGE_CBY
     // function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
     //     external
     //     payable
