@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.6.12;
+pragma solidity 0.6.12;
 
 // contract WETH9Mock {
 // 	string public name = "Wrapped Ether";

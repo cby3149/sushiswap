@@ -15,7 +15,7 @@
 // @burger_crypto - for the idea of trying to let the LPs benefit from liquidations
 
 // Version: 22-Feb-2021
-pragma solidity >=0.6.12;
+pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 // solhint-disable avoid-low-level-calls
